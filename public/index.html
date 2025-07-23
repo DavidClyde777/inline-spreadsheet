@@ -58,6 +58,34 @@
             min-height: 400px;
         }
         
+        /* Custom Handsontable styling for cleaner look */
+        .handsontable .htCore {
+            border: 1px solid #ddd;
+        }
+        
+        .handsontable .htCore th {
+            background: #f8f9fa;
+            border-right: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            font-weight: 600;
+            color: #495057;
+            padding: 8px;
+        }
+        
+        .handsontable .htCore td {
+            border-right: 1px solid #e9ecef;
+            border-bottom: 1px solid #e9ecef;
+            padding: 8px;
+        }
+        
+        .handsontable .htCore td.htLeft {
+            text-align: left;
+        }
+        
+        .handsontable .htCore td.htCenter {
+            text-align: center;
+        }
+        
         .controls {
             margin-bottom: 20px;
             text-align: center;
@@ -99,7 +127,17 @@
         }
         
         .embed-mode .controls {
-            margin-bottom: 10px;
+            display: none;
+        }
+        
+        .embed-mode #messageContainer {
+            display: none;
+        }
+        
+        .embed-mode #handsontable-container {
+            padding: 0;
+            box-shadow: none;
+            background: transparent;
         }
     </style>
 </head>
@@ -160,28 +198,37 @@
                     {
                         data: 'variantTitle',
                         readOnly: true,
-                        className: 'htLeft'
+                        className: 'htLeft',
+                        width: 'auto'
                     },
                     {
                         data: 'weight',
                         type: 'numeric',
                         numericFormat: {
                             pattern: '0.00'
-                        }
+                        },
+                        width: 'auto',
+                        className: 'htCenter'
                     },
                     {
                         data: 'hsCode',
-                        type: 'text'
+                        type: 'text',
+                        width: 'auto',
+                        className: 'htCenter'
                     }
                 ],
-                rowHeaders: true,
+                rowHeaders: embedMode ? false : true,
                 width: '100%',
-                height: 400,
+                height: embedMode ? 'auto' : 400,
                 licenseKey: 'non-commercial-and-evaluation',
-                stretchH: 'all',
-                autoWrapRow: true,
-                autoWrapCol: true,
+                autoColumnSize: true,
+                autoRowSize: true,
+                stretchH: 'none',
+                autoWrapRow: false,
+                autoWrapCol: false,
                 contextMenu: false,
+                columnSorting: true,
+                manualColumnResize: true,
                 afterChange: function(changes, source) {
                     if (source === 'edit') {
                         handleCellChange(changes);
@@ -225,14 +272,19 @@
                     // Update local data
                     currentData[row] = updatedRecord;
                     
-                    showMessage('Record updated successfully!', 'success');
+                    // Only show success message if not in embed mode
+                    if (!embedMode) {
+                        showMessage('Record updated successfully!', 'success');
+                    }
                     
                 } catch (error) {
                     console.error('Error updating record:', error);
-                    if (error.message.includes('401')) {
-                        showMessage('Authentication failed. Please check your API key.', 'error');
-                    } else {
-                        showMessage('Failed to update record. Please try again.', 'error');
+                    if (!embedMode) {
+                        if (error.message.includes('401')) {
+                            showMessage('Authentication failed. Please check your API key.', 'error');
+                        } else {
+                            showMessage('Failed to update record. Please try again.', 'error');
+                        }
                     }
                     
                     // Revert the change in the grid
@@ -264,20 +316,26 @@
                 currentData = data;
                 
                 if (data.length === 0) {
-                    showMessage('No variants found for the specified style numbers.', 'error');
+                    if (!embedMode) {
+                        showMessage('No variants found for the specified style numbers.', 'error');
+                    }
                     initHandsontable([]);
                     return;
                 }
                 
                 initHandsontable(data);
-                showMessage(`Loaded ${data.length} variant(s) successfully!`, 'success');
+                if (!embedMode) {
+                    showMessage(`Loaded ${data.length} variant(s) successfully!`, 'success');
+                }
                 
             } catch (error) {
                 console.error('Error loading data:', error);
-                if (error.message.includes('401')) {
-                    showMessage('Authentication failed. Please check your API key.', 'error');
-                } else {
-                    showMessage('Failed to load data. Please check your style numbers and try again.', 'error');
+                if (!embedMode) {
+                    if (error.message.includes('401')) {
+                        showMessage('Authentication failed. Please check your API key.', 'error');
+                    } else {
+                        showMessage('Failed to load data. Please check your style numbers and try again.', 'error');
+                    }
                 }
                 initHandsontable([]);
             }
