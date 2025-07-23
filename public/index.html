@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airtable Variants Editor</title>
+    
+    <!-- Handsontable CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/handsontable@13.1.0/dist/handsontable.full.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+        
+        #handsontable-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            min-height: 400px;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .style-numbers-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+            min-width: 300px;
+        }
+        
+        .load-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .load-btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .load-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        /* Embed-friendly styles */
+        .embed-mode {
+            padding: 10px;
+        }
+        
+        .embed-mode .header {
+            display: none;
+        }
+        
+        .embed-mode .controls {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Airtable Variants Editor</h1>
+            <p>Edit WEIGHT and HS CODE for your variants</p>
+        </div>
+        
+        <div class="controls">
+            <input 
+                type="text" 
+                id="styleNumbersInput" 
+                class="style-numbers-input" 
+                placeholder="Enter style numbers (comma-separated)"
+                value="">
+            <button id="loadDataBtn" class="load-btn">Load Data</button>
+        </div>
+        
+        <div id="messageContainer"></div>
+        <div id="handsontable-container"></div>
+    </div>
+    
+    <!-- Handsontable JS -->
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@13.1.0/dist/handsontable.full.min.js"></script>
+    
+    <script>
+        let hot = null;
+        let currentData = [];
+        
+        // Check if we're in embed mode or have URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const embedMode = urlParams.get('embed') === 'true';
+        const styleNumbersParam = urlParams.get('styleNumbers');
+        
+        if (embedMode) {
+            document.body.classList.add('embed-mode');
+        }
+        
+        if (styleNumbersParam) {
+            document.getElementById('styleNumbersInput').value = styleNumbersParam;
+        }
+        
+        // Initialize Handsontable
+        function initHandsontable(data = []) {
+            const container = document.getElementById('handsontable-container');
+            
+            if (hot) {
+                hot.destroy();
+            }
+            
+            hot = new Handsontable(container, {
+                data: data,
+                colHeaders: ['Variant Title', 'Weight', 'HS Code'],
+                columns: [
+                    {
+                        data: 'variantTitle',
+                        readOnly: true,
+                        className: 'htLeft'
+                    },
+                    {
+                        data: 'weight',
+                        type: 'numeric',
+                        numericFormat: {
+                            pattern: '0.00'
+                        }
+                    },
+                    {
+                        data: 'hsCode',
+                        type: 'text'
+                    }
+                ],
+                rowHeaders: true,
+                width: '100%',
+                height: 400,
+                licenseKey: 'non-commercial-and-evaluation',
+                stretchH: 'all',
+                autoWrapRow: true,
+                autoWrapCol: true,
+                contextMenu: false,
+                afterChange: function(changes, source) {
+                    if (source === 'edit') {
+                        handleCellChange(changes);
+                    }
+                }
+            });
+        }
+        
+        // Handle cell changes and update Airtable
+        async function handleCellChange(changes) {
+            if (!changes || changes.length === 0) return;
+            
+            for (let change of changes) {
+                const [row, prop, oldValue, newValue] = change;
+                
+                if (oldValue === newValue) continue;
+                
+                const record = currentData[row];
+                if (!record || !record.id) continue;
+                
+                try {
+                    const updateData = {};
+                    if (prop === 'weight') updateData.weight = newValue;
+                    if (prop === 'hsCode') updateData.hsCode = newValue;
+                    
+                    const response = await fetch(`/api/variants/${record.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updateData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to update record');
+                    }
+                    
+                    const updatedRecord = await response.json();
+                    
+                    // Update local data
+                    currentData[row] = updatedRecord;
+                    
+                    showMessage('Record updated successfully!', 'success');
+                    
+                } catch (error) {
+                    console.error('Error updating record:', error);
+                    showMessage('Failed to update record. Please try again.', 'error');
+                    
+                    // Revert the change in the grid
+                    hot.setDataAtCell(row, hot.propToCol(prop), oldValue);
+                }
+            }
+        }
+        
+        // Load data from Airtable
+        async function loadData() {
+            const styleNumbers = document.getElementById('styleNumbersInput').value.trim();
+            
+            if (!styleNumbers) {
+                showMessage('Please enter at least one style number.', 'error');
+                return;
+            }
+            
+            showMessage('Loading data...', 'loading');
+            
+            try {
+                const response = await fetch(`/api/variants?styleNumbers=${encodeURIComponent(styleNumbers)}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                
+                const data = await response.json();
+                currentData = data;
+                
+                if (data.length === 0) {
+                    showMessage('No variants found for the specified style numbers.', 'error');
+                    initHandsontable([]);
+                    return;
+                }
+                
+                initHandsontable(data);
+                showMessage(`Loaded ${data.length} variant(s) successfully!`, 'success');
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showMessage('Failed to load data. Please check your style numbers and try again.', 'error');
+                initHandsontable([]);
+            }
+        }
+        
+        // Show messages to user
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            container.innerHTML = `<div class="${type}">${message}</div>`;
+            
+            if (type === 'success' || type === 'loading') {
+                setTimeout(() => {
+                    container.innerHTML = '';
+                }, type === 'success' ? 3000 : 0);
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('loadDataBtn').addEventListener('click', loadData);
+        
+        document.getElementById('styleNumbersInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadData();
+            }
+        });
+        
+        // Auto-load if style numbers are provided in URL
+        if (styleNumbersParam) {
+            loadData();
+        } else {
+            // Initialize empty grid
+            initHandsontable([]);
+        }
+    </script>
+</body>
+</html> 
