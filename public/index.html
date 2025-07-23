@@ -232,7 +232,7 @@
         
         /* Embed-friendly styles */
         .embed-mode {
-            padding: 10px;
+            padding: 0;
         }
         
         .embed-mode .header {
@@ -248,13 +248,15 @@
         }
         
         .embed-mode #handsontable-container {
-            padding: 0;
+            padding: 20px;
             margin: 0;
             box-shadow: none;
             background: white;
             border-radius: 0;
             height: auto;
             min-height: auto;
+            display: block;
+            visibility: visible;
         }
         
         .embed-mode body {
@@ -516,10 +518,15 @@
             
             try {
                 const url = `/api/variants?styleNumbers=${encodeURIComponent(styleNumbers)}${apiKey ? `&apiKey=${encodeURIComponent(apiKey)}` : ''}`;
+                console.log('Fetching data from:', url);
+                
                 const response = await fetch(url);
+                console.log('Response status:', response.status);
                 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch data');
+                    const errorText = await response.text();
+                    console.error('API Error:', errorText);
+                    throw new Error(`Failed to fetch data: ${response.status} ${errorText}`);
                 }
                 
                 const data = await response.json();
@@ -572,13 +579,20 @@
             }
         });
         
-        // Auto-load if style numbers are provided in URL
-        if (styleNumbersParam) {
-            loadData();
-        } else {
-            // Initialize empty grid
-            initHandsontable([]);
-        }
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded');
+            
+            // Auto-load if style numbers are provided in URL
+            if (styleNumbersParam) {
+                console.log('Auto-loading data for style numbers:', styleNumbersParam);
+                loadData();
+            } else {
+                console.log('No style numbers provided, initializing empty grid');
+                // Initialize empty grid
+                initHandsontable([]);
+            }
+        });
     </script>
 </body>
 </html> 
