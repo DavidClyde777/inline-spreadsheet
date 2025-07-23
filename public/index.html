@@ -15,18 +15,17 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background-color: #f8f9fa;
         }
         
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            width: 100%;
+            height: 100%;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 20px;
         }
         
         .loading {
@@ -38,9 +37,9 @@
         .error {
             background-color: #f8d7da;
             color: #721c24;
-            padding: 10px;
+            padding: 5px;
             border-radius: 4px;
-            margin-bottom: 20px;
+            margin-bottom: auto;
             border: 1px solid #f5c6cb;
         }
         
@@ -49,23 +48,22 @@
             color: #155724;
             padding: 10px;
             border-radius: 4px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             border: 1px solid #c3e6cb;
         }
         
         #handsontable-container {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 20px;
-            min-height: 400px;
-            width: 100%;
-            overflow: visible;
+            background: #A3A3A3;
+            height: flex;
+            width: flex;
+            margin-bottom: 0;
+            padding-bottom: 0;
+            box-shadow: 1 1px 1px rgba(0,0,0,0.1);
         }
         
         /* Custom Handsontable styling for cleaner look */
         .handsontable .htCore {
-            border: 1px solid #A3A3A3;
+            scrollbar-width: none;
         }
         
         .handsontable .htCore th {
@@ -73,14 +71,14 @@
             border-right: 1px solid #A3A3A3;
             border-bottom: 1px solid #A3A3A3;
             font-family: 'Inter', sans-serif;
-            font-weight: 600;
+            font-weight: 500;
             color: #152237;
-            padding: 2px 8px 2px 8px;
+            padding: 15px;
             white-space: nowrap;
-            font-size: 18px;
-            vertical-align: bottom;
-            height: auto;
-            line-height: 18px;
+            width: 33.33% !important;
+            box-sizing: border-box;
+            vertical-align: middle !important;
+            height: auto !important;
         }
         
         .handsontable .htCore td {
@@ -88,72 +86,56 @@
             border-right: 1px solid #A3A3A3;
             border-bottom: 1px solid #A3A3A3;
             font-family: 'Inter', sans-serif;
-            font-weight: 600;
+            font-weight: 500;
             color: #152237;
-            padding: 8px;
+            padding: 0;
             white-space: nowrap;
-            font-size: 18px;
-            vertical-align: middle;
+            width: 33.33% !important;
+            box-sizing: border-box;
+            vertical-align: middle !important;
+            height: auto !important;
         }
         
         .handsontable .htCore td.htLeft {
             text-align: left;
-            vertical-align: middle;
         }
         
         .handsontable .htCore td.htCenter {
             text-align: center;
-            vertical-align: middle;
         }
         
-        /* Embed mode specific styling */
-        .embed-mode .handsontable {
-            margin: 0;
-            padding: 0;
+        /* Row header alignment */
+        .handsontable .htCore th.htRowHeader {
+            height: auto !important;
+            vertical-align: middle !important;
+            text-align: center !important;
+            background: #A3A3A3 !important;
+            border-right: 1px solid #A3A3A3 !important;
+            border-bottom: 1px solid #A3A3A3 !important;
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 600 !important;
+            color: #152237 !important;
+            padding: 0 !important;
         }
         
-        .embed-mode .handsontable .htCore {
-            border: 1px solid #A3A3A3;
-            width: 100% !important;
+        /* Ensure consistent row heights */
+        .handsontable .htCore tr {
+            height: auto !important;
         }
         
-        .embed-mode .handsontable .wtHolder {
-            width: 100% !important;
-        }
-        
-        .embed-mode .handsontable .wtHider {
-            width: 100% !important;
-        }
-        
-
-        
-
-        
-        /* Disable all overflow and scrolling */
-        .handsontable .wtHolder {
-            overflow: hidden !important;
-        }
-        
-        .handsontable .wtHider {
-            overflow: hidden !important;
-        }
-        
-        .handsontable .wtSpreader {
-            overflow: hidden !important;
-        }
-        
-        .handsontable .wtHolder::-webkit-scrollbar {
-            display: none !important;
-        }
-        
-        .handsontable .wtHider::-webkit-scrollbar {
-            display: none !important;
+        .handsontable .htCore tbody tr {
+            height: auto !important;
         }
         
         /* Override Handsontable default styles for consistent appearance */
         .handsontable {
             font-family: 'Inter', sans-serif !important;
-            color: #152237 !important;
+            color: #0e5bd8 !important;
+            overflow: hidden;
+            font-size: 18px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.01em !important;
+            border: 1px solid # !important;
         }
         
         .handsontable td, .handsontable th {
@@ -161,13 +143,6 @@
             font-family: 'Inter', sans-serif !important;
             font-weight: 600 !important;
             color: #152237 !important;
-            font-size: 18px !important;
-            vertical-align: middle !important;
-        }
-        
-        /* Fix header text positioning */
-        .handsontable th {
-            vertical-align: bottom !important;
         }
         
         .handsontable td.area {
@@ -179,28 +154,8 @@
             background-color: #ffffff !important;
         }
         
-        /* Ensure all cells have borders and styling, even empty ones */
-        .handsontable tbody tr td {
-            border-right: 1px solid #A3A3A3 !important;
-            border-bottom: 1px solid #A3A3A3 !important;
-            background-color: #ffffff !important;
-            font-family: 'Inter', sans-serif !important;
-            font-weight: 600 !important;
-            color: #152237 !important;
-            font-size: 18px !important;
-            vertical-align: middle !important;
-        }
-        
-        .handsontable tbody tr:last-child td {
-            border-bottom: 1px solid #A3A3A3 !important;
-        }
-        
-        .handsontable tbody tr td:last-child {
-            border-right: 1px solid #A3A3A3 !important;
-        }
-        
         .controls {
-            margin-bottom: 20px;
+            margin-bottom: auto;
             text-align: center;
         }
         
@@ -208,7 +163,7 @@
             padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            margin-right: 10px;
+            margin-right: auto;
             min-width: 300px;
         }
         
@@ -217,7 +172,7 @@
             color: white;
             border: none;
             padding: 8px 16px;
-            border-radius: 4px;
+            border-radius: 1px;
             cursor: pointer;
         }
         
@@ -227,48 +182,7 @@
         
         .load-btn:disabled {
             background-color: #6c757d;
-            cursor: not-allowed;
-        }
-        
-        /* Embed-friendly styles */
-        .embed-mode {
-            padding: 0;
-        }
-        
-        .embed-mode .header {
-            display: none;
-        }
-        
-        .embed-mode .controls {
-            display: none;
-        }
-        
-        .embed-mode #messageContainer {
-            display: none;
-        }
-        
-        .embed-mode #handsontable-container {
-            padding: 20px;
-            margin: 0;
-            box-shadow: none;
-            background: white;
-            border-radius: 0;
-            height: auto;
-            min-height: auto;
-            display: block;
-            visibility: visible;
-        }
-        
-        .embed-mode body {
-            margin: 0;
-            padding: 0;
-            background: transparent;
-        }
-        
-        .embed-mode .container {
-            margin: 0;
-            padding: 0;
-            max-width: none;
+                        cursor: not-allowed;
         }
     </style>
 </head>
@@ -300,21 +214,10 @@
         let hot = null;
         let currentData = [];
         
-        // Debug: Check if Handsontable is loaded
-        console.log('Handsontable loaded:', typeof Handsontable !== 'undefined');
-        
-        // Debug: Check DOM ready state
-        console.log('DOM ready state:', document.readyState);
-        
-        // Check if we're in embed mode or have URL parameters
+        // Check for URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const embedMode = urlParams.get('embed') === 'true';
         const styleNumbersParam = urlParams.get('styleNumbers');
         const apiKey = urlParams.get('apiKey');
-        
-        if (embedMode) {
-            document.body.classList.add('embed-mode');
-        }
         
         if (styleNumbersParam) {
             document.getElementById('styleNumbersInput').value = styleNumbersParam;
@@ -323,18 +226,6 @@
         // Initialize Handsontable
         function initHandsontable(data = []) {
             const container = document.getElementById('handsontable-container');
-            
-            // Debug: Check container exists and has dimensions
-            console.log('Container element:', container);
-            if (container) {
-                console.log('Container dimensions:', container.offsetWidth, 'x', container.offsetHeight);
-                console.log('Container computed style:', window.getComputedStyle(container).display);
-            }
-            
-            if (!container) {
-                console.error('Handsontable container not found!');
-                return;
-            }
             
             if (hot) {
                 hot.destroy();
@@ -352,78 +243,58 @@
                 });
             }
             
-            console.log('Initializing Handsontable with data:', displayData.length, 'rows');
-            
-            try {
-                hot = new Handsontable(container, {
-                    data: displayData,
-                    colHeaders: ['Variant Title', 'Weight', 'HS Code'],
-                    columns: [
-                        {
-                            data: 'variantTitle',
-                            readOnly: true,
-                            className: 'htLeft',
-                            width: 'auto'
+            hot = new Handsontable(container, {
+                data: displayData,
+                colHeaders: ['Variant Title', 'Weight', 'HS Code'],
+                columns: [
+                    {
+                        data: 'variantTitle',
+                        readOnly: true,
+                        className: 'htLeft'
+                    },
+                    {
+                        data: 'weight',
+                        type: 'numeric',
+                        numericFormat: {
+                            pattern: '0.00'
                         },
-                        {
-                            data: 'weight',
-                            type: 'numeric',
-                            numericFormat: {
-                                pattern: '0.00'
-                            },
-                            width: 'auto',
-                            className: 'htCenter',
-                            readOnly: function(row, col, prop, source) {
-                                // Make empty rows (without ID) read-only
-                                return !displayData[row] || !displayData[row].id;
-                            }
-                        },
-                        {
-                            data: 'hsCode',
-                            type: 'text',
-                            width: 'auto',
-                            className: 'htCenter',
-                            readOnly: function(row, col, prop, source) {
-                                // Make empty rows (without ID) read-only
-                                return !displayData[row] || !displayData[row].id;
-                            }
+                        className: 'htCenter',
+                        readOnly: function(row, col, prop, source) {
+                            // Make empty rows (without ID) read-only
+                            return !displayData[row] || !displayData[row].id;
                         }
-                    ],
-                    rowHeaders: embedMode ? false : true,
-                    width: '100%',
-                    height: embedMode ? 'auto' : 400,
-                    licenseKey: 'non-commercial-and-evaluation',
-                    autoColumnSize: true,
-                    autoRowSize: true,
-                    stretchH: embedMode ? 'all' : 'none',
-                    autoWrapRow: false,
-                    autoWrapCol: false,
-                    contextMenu: false,
-                    columnSorting: !embedMode,
-                    manualColumnResize: !embedMode,
-                    readOnlyCellClassName: '',
-                    minRows: 10,
-                    maxRows: 10,
-                    viewportRowRenderingOffset: 0,
-                    viewportColumnRenderingOffset: 0,
-                    disableVisualSelection: false,
-                    scrollH: 'none',
-                    scrollV: 'none',
-                    preventOverflow: 'horizontal',
-                    fillHandle: false,
-                    afterChange: function(changes, source) {
-                        // Handle all user-initiated changes (edit, drag, paste, autofill)
-                        if (source === 'edit' || source === 'Autofill.fill' || source === 'CopyPaste.paste' || source === 'fill') {
-                            handleCellChange(changes);
+                    },
+                    {
+                        data: 'hsCode',
+                        type: 'text',
+                        className: 'htCenter',
+                        readOnly: function(row, col, prop, source) {
+                            // Make empty rows (without ID) read-only
+                            return !displayData[row] || !displayData[row].id;
                         }
                     }
-                });
-                
-                console.log('Handsontable initialized successfully');
-                
-            } catch (error) {
-                console.error('Failed to initialize Handsontable:', error);
-            }
+                ],
+                rowHeaders: true,
+                columnSorting: true,
+                width: '100%',
+                height: 'auto',
+                licenseKey: 'non-commercial-and-evaluation',
+                autoColumnSize: true,
+                autoRowSize: true,
+                stretchH: 'all',
+                autoWrapRow: false,
+                autoWrapCol: false,
+                contextMenu: true,
+                columnSorting: true,
+                manualColumnResize: false,
+                readOnlyCellClassName: '',
+                afterChange: function(changes, source) {
+                    // Handle all user-initiated changes (edit, drag, paste, autofill)
+                    if (source === 'edit' || source === 'Autofill.fill' || source === 'CopyPaste.paste' || source === 'fill') {
+                        handleCellChange(changes);
+                    }
+                }
+            });
         }
         
         // Handle cell changes and update Airtable
@@ -485,19 +356,17 @@
                     currentData[row] = updatedRecord;
                 }
                 
-                // Only show success message if not in embed mode (and only for single edits, not bulk)
-                if (!embedMode && arguments.length === 5) {
+                // Only show success message for single edits, not bulk
+                if (arguments.length === 5) {
                     showMessage('Record updated successfully!', 'success');
                 }
                 
             } catch (error) {
                 console.error('Error updating record:', error);
-                if (!embedMode) {
-                    if (error.message.includes('401')) {
-                        showMessage('Authentication failed. Please check your API key.', 'error');
-                    } else {
-                        showMessage('Failed to update record. Please try again.', 'error');
-                    }
+                if (error.message.includes('401')) {
+                    showMessage('Authentication failed. Please check your API key.', 'error');
+                } else {
+                    showMessage('Failed to update record. Please try again.', 'error');
                 }
                 
                 // Revert the change in the grid
@@ -518,41 +387,30 @@
             
             try {
                 const url = `/api/variants?styleNumbers=${encodeURIComponent(styleNumbers)}${apiKey ? `&apiKey=${encodeURIComponent(apiKey)}` : ''}`;
-                console.log('Fetching data from:', url);
-                
                 const response = await fetch(url);
-                console.log('Response status:', response.status);
                 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('API Error:', errorText);
-                    throw new Error(`Failed to fetch data: ${response.status} ${errorText}`);
+                    throw new Error('Failed to fetch data');
                 }
                 
                 const data = await response.json();
                 currentData = data;
                 
                 if (data.length === 0) {
-                    if (!embedMode) {
-                        showMessage('No variants found for the specified style numbers.', 'error');
-                    }
+                    showMessage('No variants found for the specified style numbers.', 'error');
                     initHandsontable([]);
                     return;
                 }
                 
                 initHandsontable(data);
-                if (!embedMode) {
-                    showMessage(`Loaded ${data.length} variant(s) successfully!`, 'success');
-                }
+                showMessage(`Loaded ${data.length} variant(s) successfully!`, 'success');
                 
             } catch (error) {
                 console.error('Error loading data:', error);
-                if (!embedMode) {
-                    if (error.message.includes('401')) {
-                        showMessage('Authentication failed. Please check your API key.', 'error');
-                    } else {
-                        showMessage('Failed to load data. Please check your style numbers and try again.', 'error');
-                    }
+                if (error.message.includes('401')) {
+                    showMessage('Authentication failed. Please check your API key.', 'error');
+                } else {
+                    showMessage('Failed to load data. Please check your style numbers and try again.', 'error');
                 }
                 initHandsontable([]);
             }
@@ -579,20 +437,13 @@
             }
         });
         
-        // Wait for DOM to be ready
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM fully loaded');
-            
-            // Auto-load if style numbers are provided in URL
-            if (styleNumbersParam) {
-                console.log('Auto-loading data for style numbers:', styleNumbersParam);
-                loadData();
-            } else {
-                console.log('No style numbers provided, initializing empty grid');
-                // Initialize empty grid
-                initHandsontable([]);
-            }
-        });
+        // Auto-load if style numbers are provided in URL
+        if (styleNumbersParam) {
+            loadData();
+        } else {
+            // Initialize empty grid
+            initHandsontable([]);
+        }
     </script>
 </body>
 </html> 

@@ -38,15 +38,6 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-
-// Disable cache for development
-app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
-  next();
-});
-
 app.use(express.static('public'));
 
 // Airtable configuration
@@ -57,18 +48,15 @@ let base = null;
 
 if (!AIRTABLE_API_KEY) {
   console.error('AIRTABLE_API_KEY environment variable is required');
+  process.exit(1);
 }
 
 if (!AIRTABLE_BASE_ID) {
   console.error('AIRTABLE_BASE_ID environment variable is required');
+  process.exit(1);
 }
 
-if (AIRTABLE_API_KEY && AIRTABLE_BASE_ID) {
-  base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
-  console.log('Airtable connected successfully');
-} else {
-  console.error('Cannot connect to Airtable - missing environment variables');
-}
+base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
 
 // Serve the main HTML page
 app.get('/', (req, res) => {
@@ -78,10 +66,6 @@ app.get('/', (req, res) => {
 // API endpoint to get variants data
 app.get('/api/variants', async (req, res) => {
   try {
-    if (!base) {
-      return res.status(500).json({ error: 'Airtable not configured - missing environment variables' });
-    }
-    
     const { styleNumbers } = req.query;
     
     if (!styleNumbers) {
