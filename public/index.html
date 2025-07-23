@@ -59,6 +59,8 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             padding: 20px;
             min-height: 400px;
+            width: 100%;
+            overflow: visible;
         }
         
         /* Custom Handsontable styling for cleaner look */
@@ -90,7 +92,7 @@
             color: #152237;
             padding: 8px;
             white-space: nowrap;
-            font-size: calc(13px + 5px);
+            font-size: 18px;
             vertical-align: middle;
         }
         
@@ -123,13 +125,7 @@
             width: 100% !important;
         }
         
-        .embed-mode .handsontable {
-            height: auto !important;
-        }
-        
-        .embed-mode .handsontable .wtHolder {
-            height: auto !important;
-        }
+
         
 
         
@@ -167,6 +163,11 @@
             color: #152237 !important;
             font-size: 18px !important;
             vertical-align: middle !important;
+        }
+        
+        /* Fix header text positioning */
+        .handsontable th {
+            vertical-align: bottom !important;
         }
         
         .handsontable td.area {
@@ -297,6 +298,12 @@
         let hot = null;
         let currentData = [];
         
+        // Debug: Check if Handsontable is loaded
+        console.log('Handsontable loaded:', typeof Handsontable !== 'undefined');
+        
+        // Debug: Check DOM ready state
+        console.log('DOM ready state:', document.readyState);
+        
         // Check if we're in embed mode or have URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const embedMode = urlParams.get('embed') === 'true';
@@ -315,6 +322,18 @@
         function initHandsontable(data = []) {
             const container = document.getElementById('handsontable-container');
             
+            // Debug: Check container exists and has dimensions
+            console.log('Container element:', container);
+            if (container) {
+                console.log('Container dimensions:', container.offsetWidth, 'x', container.offsetHeight);
+                console.log('Container computed style:', window.getComputedStyle(container).display);
+            }
+            
+            if (!container) {
+                console.error('Handsontable container not found!');
+                return;
+            }
+            
             if (hot) {
                 hot.destroy();
             }
@@ -331,69 +350,78 @@
                 });
             }
             
-            hot = new Handsontable(container, {
-                data: displayData,
-                colHeaders: ['Variant Title', 'Weight', 'HS Code'],
-                columns: [
-                    {
-                        data: 'variantTitle',
-                        readOnly: true,
-                        className: 'htLeft',
-                        width: 'auto'
-                    },
-                    {
-                        data: 'weight',
-                        type: 'numeric',
-                        numericFormat: {
-                            pattern: '0.00'
+            console.log('Initializing Handsontable with data:', displayData.length, 'rows');
+            
+            try {
+                hot = new Handsontable(container, {
+                    data: displayData,
+                    colHeaders: ['Variant Title', 'Weight', 'HS Code'],
+                    columns: [
+                        {
+                            data: 'variantTitle',
+                            readOnly: true,
+                            className: 'htLeft',
+                            width: 'auto'
                         },
-                        width: 'auto',
-                        className: 'htCenter',
-                        readOnly: function(row, col, prop, source) {
-                            // Make empty rows (without ID) read-only
-                            return !displayData[row] || !displayData[row].id;
+                        {
+                            data: 'weight',
+                            type: 'numeric',
+                            numericFormat: {
+                                pattern: '0.00'
+                            },
+                            width: 'auto',
+                            className: 'htCenter',
+                            readOnly: function(row, col, prop, source) {
+                                // Make empty rows (without ID) read-only
+                                return !displayData[row] || !displayData[row].id;
+                            }
+                        },
+                        {
+                            data: 'hsCode',
+                            type: 'text',
+                            width: 'auto',
+                            className: 'htCenter',
+                            readOnly: function(row, col, prop, source) {
+                                // Make empty rows (without ID) read-only
+                                return !displayData[row] || !displayData[row].id;
+                            }
                         }
-                    },
-                    {
-                        data: 'hsCode',
-                        type: 'text',
-                        width: 'auto',
-                        className: 'htCenter',
-                        readOnly: function(row, col, prop, source) {
-                            // Make empty rows (without ID) read-only
-                            return !displayData[row] || !displayData[row].id;
+                    ],
+                    rowHeaders: embedMode ? false : true,
+                    width: '100%',
+                    height: embedMode ? 'auto' : 400,
+                    licenseKey: 'non-commercial-and-evaluation',
+                    autoColumnSize: true,
+                    autoRowSize: true,
+                    stretchH: embedMode ? 'all' : 'none',
+                    autoWrapRow: false,
+                    autoWrapCol: false,
+                    contextMenu: false,
+                    columnSorting: !embedMode,
+                    manualColumnResize: !embedMode,
+                    readOnlyCellClassName: '',
+                    minRows: 10,
+                    maxRows: 10,
+                    viewportRowRenderingOffset: 0,
+                    viewportColumnRenderingOffset: 0,
+                    disableVisualSelection: false,
+                    scrollH: 'none',
+                    scrollV: 'none',
+                    preventOverflow: 'horizontal',
+                    fillHandle: false,
+                    afterChange: function(changes, source) {
+                        // Handle all user-initiated changes (edit, drag, paste, autofill)
+                        if (source === 'edit' || source === 'Autofill.fill' || source === 'CopyPaste.paste' || source === 'fill') {
+                            handleCellChange(changes);
                         }
                     }
-                ],
-                rowHeaders: embedMode ? false : true,
-                width: '100%',
-                height: embedMode ? 'auto' : 400,
-                licenseKey: 'non-commercial-and-evaluation',
-                autoColumnSize: true,
-                autoRowSize: true,
-                stretchH: embedMode ? 'all' : 'none',
-                autoWrapRow: false,
-                autoWrapCol: false,
-                contextMenu: false,
-                columnSorting: !embedMode,
-                manualColumnResize: !embedMode,
-                readOnlyCellClassName: '',
-                minRows: 10,
-                maxRows: 10,
-                viewportRowRenderingOffset: 0,
-                viewportColumnRenderingOffset: 0,
-                disableVisualSelection: false,
-                scrollH: 'none',
-                scrollV: 'none',
-                preventOverflow: 'horizontal',
-                fillHandle: false,
-                afterChange: function(changes, source) {
-                    // Handle all user-initiated changes (edit, drag, paste, autofill)
-                    if (source === 'edit' || source === 'Autofill.fill' || source === 'CopyPaste.paste' || source === 'fill') {
-                        handleCellChange(changes);
-                    }
-                }
-            });
+                });
+                
+                console.log('Handsontable initialized successfully');
+                
+            } catch (error) {
+                console.error('Failed to initialize Handsontable:', error);
+            }
         }
         
         // Handle cell changes and update Airtable
