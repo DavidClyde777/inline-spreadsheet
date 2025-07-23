@@ -135,6 +135,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const embedMode = urlParams.get('embed') === 'true';
         const styleNumbersParam = urlParams.get('styleNumbers');
+        const apiKey = urlParams.get('apiKey');
         
         if (embedMode) {
             document.body.classList.add('embed-mode');
@@ -206,7 +207,8 @@
                     if (prop === 'weight') updateData.weight = newValue;
                     if (prop === 'hsCode') updateData.hsCode = newValue;
                     
-                    const response = await fetch(`/api/variants/${record.id}`, {
+                    const url = `/api/variants/${record.id}${apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : ''}`;
+                    const response = await fetch(url, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
@@ -227,7 +229,11 @@
                     
                 } catch (error) {
                     console.error('Error updating record:', error);
-                    showMessage('Failed to update record. Please try again.', 'error');
+                    if (error.message.includes('401')) {
+                        showMessage('Authentication failed. Please check your API key.', 'error');
+                    } else {
+                        showMessage('Failed to update record. Please try again.', 'error');
+                    }
                     
                     // Revert the change in the grid
                     hot.setDataAtCell(row, hot.propToCol(prop), oldValue);
@@ -247,7 +253,8 @@
             showMessage('Loading data...', 'loading');
             
             try {
-                const response = await fetch(`/api/variants?styleNumbers=${encodeURIComponent(styleNumbers)}`);
+                const url = `/api/variants?styleNumbers=${encodeURIComponent(styleNumbers)}${apiKey ? `&apiKey=${encodeURIComponent(apiKey)}` : ''}`;
+                const response = await fetch(url);
                 
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
@@ -267,7 +274,11 @@
                 
             } catch (error) {
                 console.error('Error loading data:', error);
-                showMessage('Failed to load data. Please check your style numbers and try again.', 'error');
+                if (error.message.includes('401')) {
+                    showMessage('Authentication failed. Please check your API key.', 'error');
+                } else {
+                    showMessage('Failed to load data. Please check your style numbers and try again.', 'error');
+                }
                 initHandsontable([]);
             }
         }
