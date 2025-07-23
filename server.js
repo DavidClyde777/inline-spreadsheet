@@ -7,9 +7,34 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// API Key authentication middleware
+const apiKeyAuth = (req, res, next) => {
+  const requiredApiKey = process.env.APP_API_KEY;
+  
+  if (!requiredApiKey) {
+    return next(); // Skip auth if no API key set
+  }
+  
+  const providedApiKey = req.query.apiKey || req.headers['x-api-key'];
+  
+  if (!providedApiKey || providedApiKey !== requiredApiKey) {
+    return res.status(401).json({ error: 'Invalid or missing API key' });
+  }
+  
+  next();
+};
+
+// Apply auth to all routes except health check
+app.use((req, res, next) => {
+  if (req.path === '/health') {
+    return next();
+  }
+  apiKeyAuth(req, res, next);
+});
+
 // Middleware
 app.use(cors({
-  origin: '*',
+  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
   credentials: true
 }));
 app.use(express.json());
