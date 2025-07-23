@@ -73,8 +73,12 @@
             font-family: 'Inter', sans-serif;
             font-weight: 600;
             color: #152237;
-            padding: 8px;
+            padding: 2px 8px 2px 8px;
             white-space: nowrap;
+            font-size: 18px;
+            vertical-align: bottom;
+            height: auto;
+            line-height: 18px;
         }
         
         .handsontable .htCore td {
@@ -86,14 +90,18 @@
             color: #152237;
             padding: 8px;
             white-space: nowrap;
+            font-size: calc(13px + 5px);
+            vertical-align: middle;
         }
         
         .handsontable .htCore td.htLeft {
             text-align: left;
+            vertical-align: middle;
         }
         
         .handsontable .htCore td.htCenter {
             text-align: center;
+            vertical-align: middle;
         }
         
         /* Embed mode specific styling */
@@ -115,6 +123,37 @@
             width: 100% !important;
         }
         
+        .embed-mode .handsontable {
+            height: auto !important;
+        }
+        
+        .embed-mode .handsontable .wtHolder {
+            height: auto !important;
+        }
+        
+
+        
+        /* Disable all overflow and scrolling */
+        .handsontable .wtHolder {
+            overflow: hidden !important;
+        }
+        
+        .handsontable .wtHider {
+            overflow: hidden !important;
+        }
+        
+        .handsontable .wtSpreader {
+            overflow: hidden !important;
+        }
+        
+        .handsontable .wtHolder::-webkit-scrollbar {
+            display: none !important;
+        }
+        
+        .handsontable .wtHider::-webkit-scrollbar {
+            display: none !important;
+        }
+        
         /* Override Handsontable default styles for consistent appearance */
         .handsontable {
             font-family: 'Inter', sans-serif !important;
@@ -126,6 +165,8 @@
             font-family: 'Inter', sans-serif !important;
             font-weight: 600 !important;
             color: #152237 !important;
+            font-size: 18px !important;
+            vertical-align: middle !important;
         }
         
         .handsontable td.area {
@@ -145,6 +186,8 @@
             font-family: 'Inter', sans-serif !important;
             font-weight: 600 !important;
             color: #152237 !important;
+            font-size: 18px !important;
+            vertical-align: middle !important;
         }
         
         .handsontable tbody tr:last-child td {
@@ -207,8 +250,10 @@
             padding: 0;
             margin: 0;
             box-shadow: none;
-            background: transparent;
+            background: white;
             border-radius: 0;
+            height: auto;
+            min-height: auto;
         }
         
         .embed-mode body {
@@ -288,7 +333,7 @@
             
             hot = new Handsontable(container, {
                 data: displayData,
-                colHeaders: embedMode ? false : ['Variant Title', 'Weight', 'HS Code'],
+                colHeaders: ['Variant Title', 'Weight', 'HS Code'],
                 columns: [
                     {
                         data: 'variantTitle',
@@ -335,6 +380,13 @@
                 readOnlyCellClassName: '',
                 minRows: 10,
                 maxRows: 10,
+                viewportRowRenderingOffset: 0,
+                viewportColumnRenderingOffset: 0,
+                disableVisualSelection: false,
+                scrollH: 'none',
+                scrollV: 'none',
+                preventOverflow: 'horizontal',
+                fillHandle: false,
                 afterChange: function(changes, source) {
                     // Handle all user-initiated changes (edit, drag, paste, autofill)
                     if (source === 'edit' || source === 'Autofill.fill' || source === 'CopyPaste.paste' || source === 'fill') {
