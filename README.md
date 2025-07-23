@@ -119,4 +119,4 @@ The application expects these fields in your Airtable VARIANTS table:
 
 ## License
 
-This project is for evaluation and non-commercial use with Handsontable's free license. 
+This project is for evaluation and non-commercial use with Handsontable's free license.
