@@ -70,12 +70,14 @@
             font-weight: 600;
             color: #495057;
             padding: 8px;
+            white-space: nowrap;
         }
         
         .handsontable .htCore td {
             border-right: 1px solid #e9ecef;
             border-bottom: 1px solid #e9ecef;
             padding: 8px;
+            white-space: nowrap;
         }
         
         .handsontable .htCore td.htLeft {
@@ -84,6 +86,25 @@
         
         .handsontable .htCore td.htCenter {
             text-align: center;
+        }
+        
+        /* Embed mode specific styling */
+        .embed-mode .handsontable {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .embed-mode .handsontable .htCore {
+            border: 1px solid #ddd;
+            width: 100% !important;
+        }
+        
+        .embed-mode .handsontable .wtHolder {
+            width: 100% !important;
+        }
+        
+        .embed-mode .handsontable .wtHider {
+            width: 100% !important;
         }
         
         .controls {
@@ -136,8 +157,22 @@
         
         .embed-mode #handsontable-container {
             padding: 0;
+            margin: 0;
             box-shadow: none;
             background: transparent;
+            border-radius: 0;
+        }
+        
+        .embed-mode body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+        }
+        
+        .embed-mode .container {
+            margin: 0;
+            padding: 0;
+            max-width: none;
         }
     </style>
 </head>
@@ -223,12 +258,13 @@
                 licenseKey: 'non-commercial-and-evaluation',
                 autoColumnSize: true,
                 autoRowSize: true,
-                stretchH: 'none',
+                stretchH: embedMode ? 'all' : 'none',
                 autoWrapRow: false,
                 autoWrapCol: false,
                 contextMenu: false,
-                columnSorting: true,
-                manualColumnResize: true,
+                columnSorting: !embedMode,
+                manualColumnResize: !embedMode,
+                readOnlyCellClassName: '',
                 afterChange: function(changes, source) {
                     if (source === 'edit') {
                         handleCellChange(changes);
