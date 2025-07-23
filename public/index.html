@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Airtable Variants Editor</title>
     
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Handsontable CSS -->
     <link href="https://cdn.jsdelivr.net/npm/handsontable@13.1.0/dist/handsontable.full.min.css" rel="stylesheet">
     
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             padding: 20px;
             background-color: #f8f9fa;
@@ -60,22 +63,27 @@
         
         /* Custom Handsontable styling for cleaner look */
         .handsontable .htCore {
-            border: 1px solid #ddd;
+            border: 1px solid #A3A3A3;
         }
         
         .handsontable .htCore th {
-            background: #f8f9fa;
-            border-right: 1px solid #ddd;
-            border-bottom: 1px solid #ddd;
+            background: #ffffff;
+            border-right: 1px solid #A3A3A3;
+            border-bottom: 1px solid #A3A3A3;
+            font-family: 'Inter', sans-serif;
             font-weight: 600;
-            color: #495057;
+            color: #152237;
             padding: 8px;
             white-space: nowrap;
         }
         
         .handsontable .htCore td {
-            border-right: 1px solid #e9ecef;
-            border-bottom: 1px solid #e9ecef;
+            background: #ffffff;
+            border-right: 1px solid #A3A3A3;
+            border-bottom: 1px solid #A3A3A3;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: #152237;
             padding: 8px;
             white-space: nowrap;
         }
@@ -95,7 +103,7 @@
         }
         
         .embed-mode .handsontable .htCore {
-            border: 1px solid #ddd;
+            border: 1px solid #A3A3A3;
             width: 100% !important;
         }
         
@@ -105,6 +113,28 @@
         
         .embed-mode .handsontable .wtHider {
             width: 100% !important;
+        }
+        
+        /* Override Handsontable default styles for consistent appearance */
+        .handsontable {
+            font-family: 'Inter', sans-serif !important;
+            color: #152237 !important;
+        }
+        
+        .handsontable td, .handsontable th {
+            background-color: #ffffff !important;
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 600 !important;
+            color: #152237 !important;
+        }
+        
+        .handsontable td.area {
+            background-color: #ffffff !important;
+        }
+        
+        .handsontable .currentCol,
+        .handsontable .currentRow {
+            background-color: #ffffff !important;
         }
         
         .controls {
@@ -226,9 +256,21 @@
                 hot.destroy();
             }
             
+            // Ensure we always have exactly 10 rows
+            const displayData = [...data];
+            while (displayData.length < 10) {
+                displayData.push({
+                    id: null,
+                    variantTitle: '',
+                    weight: '',
+                    hsCode: '',
+                    styleNumber: ''
+                });
+            }
+            
             hot = new Handsontable(container, {
-                data: data,
-                colHeaders: ['Variant Title', 'Weight', 'HS Code'],
+                data: displayData,
+                colHeaders: embedMode ? false : ['Variant Title', 'Weight', 'HS Code'],
                 columns: [
                     {
                         data: 'variantTitle',
@@ -243,13 +285,21 @@
                             pattern: '0.00'
                         },
                         width: 'auto',
-                        className: 'htCenter'
+                        className: 'htCenter',
+                        readOnly: function(row, col, prop, source) {
+                            // Make empty rows (without ID) read-only
+                            return !displayData[row] || !displayData[row].id;
+                        }
                     },
                     {
                         data: 'hsCode',
                         type: 'text',
                         width: 'auto',
-                        className: 'htCenter'
+                        className: 'htCenter',
+                        readOnly: function(row, col, prop, source) {
+                            // Make empty rows (without ID) read-only
+                            return !displayData[row] || !displayData[row].id;
+                        }
                     }
                 ],
                 rowHeaders: embedMode ? false : true,
@@ -266,7 +316,8 @@
                 manualColumnResize: !embedMode,
                 readOnlyCellClassName: '',
                 afterChange: function(changes, source) {
-                    if (source === 'edit') {
+                    // Handle all user-initiated changes (edit, drag, paste, autofill)
+                    if (source === 'edit' || source === 'Autofill.fill' || source === 'CopyPaste.paste' || source === 'fill') {
                         handleCellChange(changes);
                     }
                 }
@@ -277,6 +328,9 @@
         async function handleCellChange(changes) {
             if (!changes || changes.length === 0) return;
             
+            // Process updates in batches to avoid overwhelming the API
+            const updatePromises = [];
+            
             for (let change of changes) {
                 const [row, prop, oldValue, newValue] = change;
                 
@@ -285,47 +339,67 @@
                 const record = currentData[row];
                 if (!record || !record.id) continue;
                 
-                try {
-                    const updateData = {};
-                    if (prop === 'weight') updateData.weight = newValue;
-                    if (prop === 'hsCode') updateData.hsCode = newValue;
-                    
-                    const url = `/api/variants/${record.id}${apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : ''}`;
-                    const response = await fetch(url, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(updateData)
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to update record');
-                    }
-                    
-                    const updatedRecord = await response.json();
-                    
-                    // Update local data
-                    currentData[row] = updatedRecord;
-                    
-                    // Only show success message if not in embed mode
-                    if (!embedMode) {
-                        showMessage('Record updated successfully!', 'success');
-                    }
-                    
-                } catch (error) {
-                    console.error('Error updating record:', error);
-                    if (!embedMode) {
-                        if (error.message.includes('401')) {
-                            showMessage('Authentication failed. Please check your API key.', 'error');
-                        } else {
-                            showMessage('Failed to update record. Please try again.', 'error');
-                        }
-                    }
-                    
-                    // Revert the change in the grid
-                    hot.setDataAtCell(row, hot.propToCol(prop), oldValue);
+                // Only update editable fields
+                if (prop !== 'weight' && prop !== 'hsCode') continue;
+                
+                const updatePromise = updateSingleRecord(row, prop, oldValue, newValue, record);
+                updatePromises.push(updatePromise);
+            }
+            
+            // Wait for all updates to complete
+            await Promise.all(updatePromises);
+        }
+        
+        // Update a single record in Airtable
+        async function updateSingleRecord(row, prop, oldValue, newValue, record) {
+            try {
+                // Skip update if this is an empty row (no ID)
+                if (!record || !record.id) {
+                    console.log('Skipping update for empty row');
+                    return;
                 }
+                
+                const updateData = {};
+                if (prop === 'weight') updateData.weight = newValue;
+                if (prop === 'hsCode') updateData.hsCode = newValue;
+                
+                const url = `/api/variants/${record.id}${apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : ''}`;
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to update record');
+                }
+                
+                const updatedRecord = await response.json();
+                
+                // Update local data (only for real records, not empty padding rows)
+                if (row < currentData.length) {
+                    currentData[row] = updatedRecord;
+                }
+                
+                // Only show success message if not in embed mode (and only for single edits, not bulk)
+                if (!embedMode && arguments.length === 5) {
+                    showMessage('Record updated successfully!', 'success');
+                }
+                
+            } catch (error) {
+                console.error('Error updating record:', error);
+                if (!embedMode) {
+                    if (error.message.includes('401')) {
+                        showMessage('Authentication failed. Please check your API key.', 'error');
+                    } else {
+                        showMessage('Failed to update record. Please try again.', 'error');
+                    }
+                }
+                
+                // Revert the change in the grid
+                hot.setDataAtCell(row, hot.propToCol(prop), oldValue);
             }
         }
         
